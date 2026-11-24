@@ -1,0 +1,11 @@
+{
+  "model_version": "v2",
+  "trained_on": "2026-11-24 08:38",
+  "test_loss": 0.1237,
+  "test_accuracy": 0.9632,
+  "weighted_precision": 0.962,
+  "weighted_recall": 0.9611,
+  "weighted_f1": 0.9604,
+  "macro_f1": 0.9507,
+  "note": "Precision, recall and F1 values are from the previous version until the next full evaluation."
+}

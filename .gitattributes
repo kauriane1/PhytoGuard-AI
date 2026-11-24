@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.h5 binary
+*.keras binary
+*.jpg binary
+*.jpeg binary
+*.png binary
