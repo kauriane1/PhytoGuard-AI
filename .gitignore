@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Runtime data created by the app
+data/uploads/
+models/archive/
+
+# Kaggle / Jupyter leftovers
+.ipynb_checkpoints/
+*.keras
