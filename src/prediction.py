@@ -10,7 +10,7 @@ import threading
 
 import numpy as np
 
-from src.config import CLASS_NAMES_PATH, MODEL_PATH, TOP_K
+from src.config import CLASS_NAMES_PATH, IMG_SIZE, MODEL_PATH, TOP_K
 from src.model import load_class_names, load_model
 from src.preprocessing import preprocess_image_bytes, preprocess_image_file
 
@@ -39,6 +39,9 @@ class Predictor:
         """Load (or reload) the model and class names from disk."""
         model = load_model(self.model_path)
         class_names = load_class_names(self.class_names_path)
+        # Warm-up: the first prediction is slow while TensorFlow builds its graph,
+        # so run one on a blank image before serving real requests.
+        model.predict(np.zeros((1, *IMG_SIZE, 3), dtype=np.float32), verbose=0)
         with self._lock:
             self.model = model
             self.class_names = class_names
