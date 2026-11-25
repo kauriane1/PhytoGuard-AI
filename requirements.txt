@@ -1,7 +1,7 @@
-tensorflow-cpu==2.21.0
+# Serving: API and production retraining (no TensorFlow needed)
 numpy
-scikit-learn
 pillow
+ai-edge-litert==2.4.0
 fastapi
 uvicorn[standard]
 python-multipart

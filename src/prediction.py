@@ -1,17 +1,17 @@
 """
 Single-image prediction for PhytoGuard AI.
 
-The Predictor keeps the model in memory so that each request only needs to
-preprocess the image and run one forward pass. It can reload the model after
-retraining without restarting the API.
+The Predictor keeps the feature extractor and the classification head in memory,
+so each request only preprocesses the image and runs one forward pass. It can
+reload the head after retraining without restarting the API.
 """
 
 import threading
 
 import numpy as np
 
-from src.config import CLASS_NAMES_PATH, IMG_SIZE, MODEL_PATH, TOP_K
-from src.model import load_class_names, load_model
+from src.config import CLASS_NAMES_PATH, FEATURE_EXTRACTOR_PATH, HEAD_PATH, IMG_SIZE, NUM_THREADS, TOP_K
+from src.model import FeatureExtractor, load_class_names, load_head, softmax
 from src.preprocessing import preprocess_image_bytes, preprocess_image_file
 
 
@@ -29,26 +29,35 @@ def format_class_name(class_name):
 
 
 class Predictor:
-    def __init__(self, model_path=MODEL_PATH, class_names_path=CLASS_NAMES_PATH):
-        self.model_path = model_path
+    def __init__(self, extractor_path=FEATURE_EXTRACTOR_PATH, head_path=HEAD_PATH,
+                 class_names_path=CLASS_NAMES_PATH):
+        self.head_path = head_path
         self.class_names_path = class_names_path
         self._lock = threading.Lock()
+        self.extractor = FeatureExtractor(extractor_path, num_threads=NUM_THREADS)
         self.reload()
 
+    @property
+    def model(self):
+        return self.weights
+
     def reload(self):
-        """Load (or reload) the model and class names from disk."""
-        model = load_model(self.model_path)
+        """Load (or reload) the classification head and class names from disk."""
+        weights, bias = load_head(self.head_path)
         class_names = load_class_names(self.class_names_path)
-        # Warm-up: the first prediction is slow while TensorFlow builds its graph,
-        # so run one on a blank image before serving real requests.
-        model.predict(np.zeros((1, *IMG_SIZE, 3), dtype=np.float32), verbose=0)
         with self._lock:
-            self.model = model
-            self.class_names = class_names
+            self.weights, self.bias, self.class_names = weights, bias, class_names
+            # Warm-up so the first real request is not slow
+            self.extractor(np.zeros((1, *IMG_SIZE, 3), dtype=np.float32))
+
+    def extract_features(self, image_batch):
+        with self._lock:
+            return self.extractor(image_batch)
 
     def _predict_batch(self, image_batch, top_k):
         with self._lock:
-            probabilities = self.model.predict(image_batch, verbose=0)[0]
+            features = self.extractor(image_batch)
+            probabilities = softmax(features @ self.weights + self.bias)[0]
             class_names = self.class_names
 
         top_indices = np.argsort(probabilities)[-top_k:][::-1]

@@ -100,7 +100,8 @@ def _pending_uploads():
 
 def _retrain_worker(manual):
     try:
-        result = run_retraining(new_data_dir=UPLOAD_DIR, manual_trigger=manual)
+        result = run_retraining(extractor=predictor.extract_features,
+                                new_data_dir=UPLOAD_DIR, manual_trigger=manual)
         if result.get("promoted"):
             predictor.reload()
         retrain_state.update(status="completed", result=result, finished_at=_now())

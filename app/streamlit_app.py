@@ -31,7 +31,7 @@ st.set_page_config(page_title="PhytoGuard AI", page_icon="🌿", layout="wide")
 # Helpers
 # ---------------------------------------------------------------------------
 
-def api_get(path, timeout=10):
+def api_get(path, timeout=75):
     try:
         response = requests.get(f"{API_URL}{path}", timeout=timeout)
         response.raise_for_status()
@@ -86,7 +86,8 @@ page = st.sidebar.radio(
     ["Model Status", "Predict", "Data Visualisations", "Upload & Retrain"],
 )
 
-health, health_error = api_get("/health")
+with st.spinner("Connecting to the API. On the free cloud plan it can take up to a minute to wake up..."):
+    health, health_error = api_get("/health")
 if health:
     st.sidebar.success(f"API online · model {health['model_version']}")
     st.sidebar.caption(f"Up-time: {health['uptime_readable']}")
@@ -148,7 +149,7 @@ def page_status():
     history = metrics["retrain_history"]
     if history:
         df = pd.DataFrame(history)
-        cols = [c for c in ["timestamp", "new_images", "replay_images", "epochs_run",
+        cols = [c for c in ["timestamp", "method", "new_images", "replay_images",
                             "old_test_accuracy", "new_test_accuracy", "promoted",
                             "evaluation_set"] if c in df.columns]
         st.dataframe(df[cols].iloc[::-1], hide_index=True, width="stretch")
@@ -385,9 +386,10 @@ def page_retrain():
 
     st.subheader("2. Retrain the model")
     st.markdown(
-        "Retraining fine-tunes the current model on the uploaded images plus a replay sample of the "
-        "original training data. Both models are then tested on the same held-out images, and the new "
-        "model only replaces the current one if it is at least as accurate."
+        "Retraining updates the model's classification layer using the uploaded images plus a replay "
+        "sample of the original training data, on top of the frozen MobileNetV2 feature extractor. "
+        "Both models are then tested on the same held-out images, and the new model only replaces "
+        "the current one if it is at least as accurate."
     )
 
     if st.button("🚀 Start retraining", type="primary"):
@@ -422,7 +424,7 @@ def show_retrain_status():
     st.subheader("Retraining status")
     if status["status"] == "running":
         st.info(f"⏳ Retraining is running (trigger: {status['trigger']}, started {status['started_at']} UTC). "
-                "This takes a few minutes.")
+                "This usually takes under a minute.")
         if st.button("Check progress"):
             st.rerun()
         return
@@ -447,7 +449,7 @@ def show_retrain_status():
     else:
         st.warning("The retrained model was less accurate, so the previous model was kept.")
     st.caption(f"Evaluated on {result['evaluation_set']} · finished {status['finished_at']} UTC · "
-               f"{result['epochs_run']} epochs")
+               f"method: {result.get('method', 'fine-tuning')}")
 
 
 # ---------------------------------------------------------------------------

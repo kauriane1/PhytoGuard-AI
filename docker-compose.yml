@@ -12,10 +12,9 @@ services:
       dockerfile: Dockerfile
     environment:
       - AUTO_RETRAIN=true
-      # One CPU and one TensorFlow thread per container, like a small cloud
+      # One CPU and one inference thread per container, like a small cloud
       # instance, so adding containers adds real capacity in the load test
-      - TF_NUM_INTRAOP_THREADS=1
-      - TF_NUM_INTEROP_THREADS=1
+      - NUM_THREADS=1
     cpus: "1.0"
     expose:
       - "8000"

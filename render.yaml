@@ -1,0 +1,24 @@
+# Render Blueprint: deploys the API and the dashboard as two free web services.
+# Render dashboard -> New -> Blueprint -> select this repository.
+services:
+  - type: web
+    name: phytoguard-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: AUTO_RETRAIN
+        value: "true"
+      - key: NUM_THREADS
+        value: "1"
+
+  - type: web
+    name: phytoguard-ui
+    runtime: docker
+    dockerfilePath: ./Dockerfile.ui
+    plan: free
+    envVars:
+      # The public URL of the API service, for example https://phytoguard-api.onrender.com
+      - key: API_URL
+        sync: false

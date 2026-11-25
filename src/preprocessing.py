@@ -1,46 +1,43 @@
 """
 Image preprocessing for PhytoGuard AI.
 
-These functions apply exactly the same steps used in the notebook:
-decode the image, resize it to 224 x 224 and apply MobileNetV2 normalisation
-(pixel values scaled from 0-255 to -1 to 1). Training images are also augmented.
+The same steps as the notebook: decode the image as RGB, resize it to 224 x 224
+and apply MobileNetV2 normalisation (pixel values scaled from 0-255 to -1 to 1).
+
+This module only needs NumPy and Pillow, so the deployed API stays small enough
+for a free cloud instance. The TensorFlow training pipeline lives in the notebook
+and in src/model.py.
 """
 
+import io
 import os
 
 import numpy as np
-import tensorflow as tf
+from PIL import Image, UnidentifiedImageError
 
-from src.config import BATCH_SIZE, IMG_SIZE, VALID_EXTENSIONS
-
-# Same augmentation as the notebook: flip, rotation and zoom
-data_augmentation = tf.keras.Sequential([
-    tf.keras.layers.RandomFlip("horizontal"),
-    tf.keras.layers.RandomRotation(0.1),
-    tf.keras.layers.RandomZoom(0.1),
-])
-
-
-def preprocess_image_tensor(image):
-    """Resize a decoded RGB image tensor and apply MobileNetV2 normalisation."""
-    image = tf.image.resize(image, IMG_SIZE)
-    return tf.keras.applications.mobilenet_v2.preprocess_input(image)
+from src.config import IMG_SIZE, VALID_EXTENSIONS
 
 
 def decode_image_bytes(image_bytes):
-    """Decode JPEG or PNG bytes into an RGB tensor. Raises ValueError for invalid files."""
+    """Decode JPEG or PNG bytes into an RGB PIL image. Raises ValueError for invalid files."""
     try:
-        image = tf.io.decode_image(image_bytes, channels=3, expand_animations=False)
-    except (tf.errors.InvalidArgumentError, ValueError) as error:
+        image = Image.open(io.BytesIO(image_bytes))
+        image.load()
+    except (UnidentifiedImageError, OSError, ValueError) as error:
         raise ValueError("The file is not a valid JPEG or PNG image.") from error
-    return image
+    return image.convert("RGB")
+
+
+def preprocess_pil_image(image):
+    """Resize to 224 x 224 and scale pixels to [-1, 1] (MobileNetV2 preprocessing)."""
+    image = image.resize(IMG_SIZE, Image.BILINEAR)
+    array = np.asarray(image, dtype=np.float32)
+    return array / 127.5 - 1.0
 
 
 def preprocess_image_bytes(image_bytes):
     """Turn raw uploaded image bytes into a model-ready batch of shape (1, 224, 224, 3)."""
-    image = decode_image_bytes(image_bytes)
-    image = preprocess_image_tensor(image)
-    return np.expand_dims(image.numpy(), axis=0)
+    return preprocess_pil_image(decode_image_bytes(image_bytes))[np.newaxis, ...]
 
 
 def preprocess_image_file(image_path):
@@ -78,30 +75,3 @@ def load_labelled_folder(folder, class_names):
                 labels.append(label)
 
     return paths, labels, skipped
-
-
-def _load_and_preprocess(path, label):
-    image = tf.io.read_file(path)
-    image = tf.io.decode_image(image, channels=3, expand_animations=False)
-    image.set_shape([None, None, 3])
-    return preprocess_image_tensor(image), label
-
-
-def _augment(image, label):
-    image = data_augmentation(tf.expand_dims(image, axis=0), training=True)
-    return tf.squeeze(image, axis=0), label
-
-
-def build_dataset(paths, labels, training=False, batch_size=BATCH_SIZE):
-    """Create a batched tf.data pipeline from image paths and labels."""
-    dataset = tf.data.Dataset.from_tensor_slices((list(paths), list(labels)))
-
-    if training:
-        dataset = dataset.shuffle(len(paths), seed=42)
-
-    dataset = dataset.map(_load_and_preprocess, num_parallel_calls=tf.data.AUTOTUNE)
-
-    if training:
-        dataset = dataset.map(_augment, num_parallel_calls=tf.data.AUTOTUNE)
-
-    return dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)

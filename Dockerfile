@@ -1,9 +1,8 @@
-# PhytoGuard AI - API container (FastAPI + TensorFlow model)
+# PhytoGuard AI - API container (FastAPI + TensorFlow Lite model)
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    TF_CPP_MIN_LOG_LEVEL=2 \
     PORT=8000
 
 WORKDIR /app
@@ -12,7 +11,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Application code, trained model and sample data
+# Application code, serving model files and sample data
 COPY src/ src/
 COPY models/ models/
 COPY data/ data/

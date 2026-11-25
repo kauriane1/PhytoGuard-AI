@@ -16,7 +16,10 @@ BASE_DIR = os.environ.get(
 
 # Model files
 MODEL_DIR = os.path.join(BASE_DIR, "models")
-MODEL_PATH = os.path.join(MODEL_DIR, "phytoguard_ai_final.h5")
+MODEL_PATH = os.path.join(MODEL_DIR, "phytoguard_ai_final.h5")          # full Keras model (training)
+FEATURE_EXTRACTOR_PATH = os.path.join(MODEL_DIR, "phytoguard_feature_extractor.tflite")  # serving
+HEAD_PATH = os.path.join(MODEL_DIR, "phytoguard_head.npz")              # serving: final layer weights
+FEATURE_CACHE_PATH = os.path.join(MODEL_DIR, "feature_cache.npz")       # cached features of data/ images
 CLASS_NAMES_PATH = os.path.join(MODEL_DIR, "class_names.json")
 METRICS_PATH = os.path.join(MODEL_DIR, "metrics.json")
 RETRAIN_LOG_PATH = os.path.join(MODEL_DIR, "retrain_log.json")
@@ -36,7 +39,10 @@ VALID_EXTENSIONS = (".jpg", ".jpeg", ".png")
 
 # Retraining settings
 RETRAIN_THRESHOLD = 200      # automatic trigger after this many new images
-RETRAIN_EPOCHS = 3
+RETRAIN_EPOCHS = 3           # full fine-tuning in the notebook / with TensorFlow
 RETRAIN_LEARNING_RATE = 1e-5
 FINE_TUNE_LAYERS = 30        # top MobileNetV2 layers unfrozen during fine-tuning
+HEAD_RETRAIN_STEPS = 300     # production retraining of the final layer
+HEAD_LEARNING_RATE = 0.01
 TOP_K = 3                    # number of predictions returned to the user
+NUM_THREADS = int(os.environ.get("NUM_THREADS", "2"))  # CPU threads for inference
