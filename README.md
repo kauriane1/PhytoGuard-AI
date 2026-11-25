@@ -13,7 +13,7 @@ PhytoGuard AI detects plant diseases from a photo of a leaf. It covers the full 
 
 ## 1. Project Description
 
-Crop diseases cause major losses for smallholder farmers, and many farmers cannot easily reach an agricultural expert to identify a disease in time. This project builds on my Introduction to Machine Learning summative (an education-focused classification problem on tabular data) and extends it to **image data**, as required for this assignment.
+Crop diseases cause major losses for smallholder farmers, and many farmers cannot easily reach an agricultural expert to identify a disease in time. This project builds on my Introduction to Machine Learning summative, [Credit Card Payment Default Prediction](https://github.com/kauriane1/creditDefaultProject), where I compared traditional machine learning and deep learning models on tabular data (30,000 customers, an imbalanced binary classification task). This assignment requires non-tabular data, and credit records do not come as images or sound, so I kept the same end-to-end classification workflow and applied it to an image-based problem: detecting plant diseases from leaf photos. The evaluation approach carries over directly: stratified data splits, macro-F1 alongside accuracy, per-class precision and recall, confusion matrices, and a close look at the classes the model gets wrong.
 
 PhytoGuard AI classifies a leaf image into one of **38 classes** covering **14 crops** (including tomato, potato, maize, apple, grape and pepper), either as healthy or as a specific disease. A farmer or extension officer uploads a photo and receives the crop, the condition, a confidence score and the top three most likely classes.
 
