@@ -1,0 +1,42 @@
+# Run the full system locally:
+#   docker compose up --build                  (1 API container)
+#   docker compose up --build --scale api=3    (3 API containers behind nginx)
+#
+# API (through the load balancer): http://localhost:8000/docs
+# Dashboard:                       http://localhost:8501
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - AUTO_RETRAIN=true
+      # One CPU and one TensorFlow thread per container, like a small cloud
+      # instance, so adding containers adds real capacity in the load test
+      - TF_NUM_INTRAOP_THREADS=1
+      - TF_NUM_INTEROP_THREADS=1
+    cpus: "1.0"
+    expose:
+      - "8000"
+
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    environment:
+      - API_URL=http://nginx
+    ports:
+      - "8501:8501"
+    depends_on:
+      - nginx
