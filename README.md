@@ -141,8 +141,6 @@ Interactive documentation: https://phytoguard-api.onrender.com/docs
 
 The API was load tested with Locust on the same workload each time: **30 concurrent users**, spawned at 5 per second, for **2 minutes**. Each user uploaded leaf images from `data/test` to `POST /predict` and occasionally checked `GET /health`, waiting 1 to 2 seconds between requests. Each API container was limited to **1 CPU** to mimic a small cloud instance, and nginx distributed requests across the containers.
 
-![Load test results](results/load_test_results.png)
-
 | POST /predict | 1 container | 2 containers | 3 containers |
 |---|---|---|---|
 | Requests served | 630 | 1,360 | 1,719 |
