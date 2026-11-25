@@ -4,14 +4,12 @@ PhytoGuard AI detects plant diseases from a photo of a leaf. It covers the full 
 
 | | Link |
 |---|---|
-| 🌐 **Web dashboard** | https://phytoguard-ui.onrender.com |
-| ⚙️ **API (Swagger docs)** | https://phytoguard-api.onrender.com/docs |
-| 🎥 **Video demo** | ADD_YOUR_YOUTUBE_LINK_HERE |
-| 💻 **GitHub repository** | https://github.com/kauriane1/PhytoGuard-AI |
+| **Web dashboard** | https://phytoguard-ui.onrender.com |
+| **API (Swagger docs)** | https://phytoguard-api.onrender.com/docs |
+| **Video demo** | ADD_YOUR_YOUTUBE_LINK_HERE |
+| **GitHub repository** | https://github.com/kauriane1/PhytoGuard-AI |
 
 > **Note:** the app runs on Render's free plan, which sleeps after 15 minutes without visits. The first visit can take about a minute while it wakes up. After that it responds normally.
-
----
 
 ## 1. Project Description
 
@@ -30,7 +28,6 @@ PhytoGuard AI classifies a leaf image into one of **38 classes** covering **14 c
 | Macro F1 (every class weighted equally) | 95.07% |
 | Test loss | 0.1262 (0.1237 after retraining) |
 
----
 
 ## 2. Features
 
@@ -44,7 +41,6 @@ PhytoGuard AI classifies a leaf image into one of **38 classes** covering **14 c
 | **Evaluation in production** | Each retraining compares the old and new model on held-out images, and the new one is only promoted if it is at least as accurate |
 | **Load testing** with different numbers of Docker containers | Section 7 below, and the `results/` folder |
 
----
 
 ## 3. Architecture
 
@@ -67,7 +63,6 @@ PhytoGuard AI classifies a leaf image into one of **38 classes** covering **14 c
 
 Locally, `docker-compose` runs the dashboard, an **nginx load balancer** and any number of API containers behind it.
 
----
 
 ## 4. Repository Structure
 
@@ -104,8 +99,6 @@ PhytoGuard-AI/
 └── requirements.txt, requirements-ui.txt, requirements-train.txt
 ```
 
----
-
 ## 5. The Machine Learning Pipeline
 
 All steps are documented in detail, with interpretations, in `notebook/phytoguard_ai.ipynb`.
@@ -127,8 +120,6 @@ The notebook (Section 6) retrains by **fine-tuning the top MobileNetV2 layers** 
 ### Serving the model efficiently
 For deployment, the trained Keras model (`phytoguard_ai_final.h5`) is split into a **TensorFlow Lite feature extractor** and the **classification head weights** (`python -m src.model --export`). Predictions are identical to the Keras model (maximum probability difference of 0.000003, with 100% agreement on the predicted class), but the API needs about 190 MB of memory instead of about 730 MB with full TensorFlow.
 
----
-
 ## 6. API Endpoints
 
 | Method | Endpoint | Description |
@@ -145,7 +136,6 @@ For deployment, the trained Keras model (`phytoguard_ai_final.h5`) is split into
 
 Interactive documentation: https://phytoguard-api.onrender.com/docs
 
----
 
 ## 7. Load Testing Results (Locust)
 
@@ -173,7 +163,6 @@ Overall, the model scales horizontally: response time and capacity improve almos
 
 Raw results: `results/containers_1_stats.csv`, `containers_2_stats.csv` and `containers_3_stats.csv`.
 
----
 
 ## 8. Setup Instructions
 
@@ -242,7 +231,6 @@ The repository includes a Render Blueprint (`render.yaml`) that creates two free
 2. Set `API_URL` to the public URL of the `phytoguard-api` service.
 3. Deploy. Render builds both Docker images from the repository.
 
----
 
 ## 9. Limitations and Future Work
 
@@ -250,9 +238,3 @@ The repository includes a Render Blueprint (`render.yaml`) that creates two free
 - **Weak classes:** Tomato Early blight, Corn Cercospora leaf spot and Tomato Target Spot have the lowest F1-scores and should be prioritised when collecting new data.
 - **Free hosting:** the free plan has no persistent storage, so uploaded images and retrained versions are reset when the service restarts. A paid plan with a persistent disk, or cloud storage such as S3, would keep them.
 - **Single-crop coverage gaps:** some crops only have healthy or only diseased images, so the model cannot distinguish health status for them.
-
----
-
-## Author
-
-ADD_YOUR_NAME_HERE, BSc Software Engineering, African Leadership University
