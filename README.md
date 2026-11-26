@@ -7,7 +7,6 @@ PhytoGuard AI detects plant diseases from a photo of a leaf. It covers the full 
 | **Web dashboard** | https://phytoguard-ui.onrender.com |
 | **API (Swagger docs)** | https://phytoguard-api.onrender.com/docs |
 | **Video demo** | ADD_YOUR_YOUTUBE_LINK_HERE |
-| **GitHub repository** | https://github.com/kauriane1/PhytoGuard-AI |
 
 > **Note:** the app runs on Render's free plan, which sleeps after 15 minutes without visits. The first visit can take about a minute while it wakes up. After that it responds normally.
 
