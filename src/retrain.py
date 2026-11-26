@@ -96,7 +96,7 @@ def _loss_and_accuracy(features, labels, weights, bias):
 
 
 def train_head(features, labels, weights, bias, val_features, val_labels,
-               steps=HEAD_RETRAIN_STEPS, learning_rate=HEAD_LEARNING_RATE, l2=1e-3):
+               steps=HEAD_RETRAIN_STEPS, learning_rate=HEAD_LEARNING_RATE, l2=1e-2):
     """
     Continue training the softmax layer with Adam, starting from the current weights.
 
