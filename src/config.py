@@ -43,6 +43,6 @@ RETRAIN_EPOCHS = 3           # full fine-tuning in the notebook / with TensorFlo
 RETRAIN_LEARNING_RATE = 1e-5
 FINE_TUNE_LAYERS = 30        # top MobileNetV2 layers unfrozen during fine-tuning
 HEAD_RETRAIN_STEPS = 300     # production retraining of the final layer
-HEAD_LEARNING_RATE = 0.01
+HEAD_LEARNING_RATE = 0.001
 TOP_K = 3                    # number of predictions returned to the user
 NUM_THREADS = int(os.environ.get("NUM_THREADS", "2"))  # CPU threads for inference
